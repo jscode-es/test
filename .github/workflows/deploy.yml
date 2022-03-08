@@ -33,4 +33,4 @@ jobs:
       - run: npm run build
       - run: ls -la
       - name: Sincronizar
-        run: rsync -avz -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --progress /* 164.90.202.70:/server/
+        run: rsync -avz -e "ssh -p 6060 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --progress /* 164.90.202.70:/server/
