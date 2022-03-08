@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  list:
+  lint:
     runs-on: ubuntu-20.04
     steps:
       - name: Cancelar la ultima acción
@@ -27,6 +27,7 @@ jobs:
         run: ls
   build:
     runs-on: ubuntu-20.04
+    needs: [lint]
     steps:
       - name: Cancelar la ultima acción
         uses: styfle/cancel-workflow-action@0.9.1
