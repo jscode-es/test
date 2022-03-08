@@ -1,0 +1,75 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Cancelar la ultima acción
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Recuperar repositorio actual
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Instalar node v16.13.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.13.0"
+      - run: npm install
+      - run: npm run lint
+      - name: Lista de directorios
+        run: ls
+  build:
+    runs-on: ubuntu-20.04
+    needs: [lint]
+    steps:
+      - name: Cancelar la ultima acción
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Recuperar repositorio actual
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Instalar node v16.13.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.13.0"
+      - run: npm install
+      - run: npm run build
+      - name: Lista de directorios
+        run: ls
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - name: Cancelar la ultima acción
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Crear directorio ssh
+        run: mkdir -p ~/.ssh && chmod 0700 ~/.ssh
+      - name: Guardar clave publica
+        run: touch ~/.ssh/authorized_keys && chmod 0644 ~/.ssh/authorized_keys
+      - name: Añadir clave publica
+        run: echo "${{ secrets.SSH_KEY }}" >> ~/.ssh/authorized_keys
+      - name: cat secrets.SSH_KEY
+        run: cat ~/.ssh/authorized_keys
+      - name: Recuperar repositorio actual
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Instalar node v16.13.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.13.0"
+      - run: npm install
+      - run: npm run build
+      - name: Sincronizar
+        run: rsync -avz -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --progress /* 164.90.202.70:/server/
